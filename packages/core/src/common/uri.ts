@@ -189,6 +189,10 @@ export default class URI {
         return this._path;
     }
 
+    get fsPath(): string {
+        return this.codeUri.fsPath;
+    }
+
     get query(): string {
         return this.codeUri.query;
     }

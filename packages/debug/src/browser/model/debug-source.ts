@@ -88,4 +88,18 @@ export class DebugSource extends DebugSourceData {
         }
         return new URI().withFile(raw.path);
     }
+    static toSource(uri: URI): DebugProtocol.Source {
+        if (uri.scheme === DebugSource.SCHEME) {
+            return {
+                name: uri.path.toString(),
+                sourceReference: Number(uri.query)
+            };
+        }
+        // Crete a new URI to force vscode-uri to parse the path and store the fsPath
+        const path = new URI(uri.toString()).fsPath;
+        return {
+            name: uri.displayName,
+            path
+        };
+    }
 }

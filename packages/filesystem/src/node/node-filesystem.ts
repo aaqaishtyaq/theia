@@ -382,8 +382,12 @@ export class FileSystemNode implements FileSystem {
         }
     }
 
-    async getFsPath(uri: string): Promise<string> {
-        return FileUri.fsPath(uri);
+    async getFsPath(uri: string): Promise<string | undefined> {
+        if (!uri.startsWith('file:/')) {
+            return undefined;
+        } else {
+            return FileUri.fsPath(uri);
+        }
     }
 
     protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
