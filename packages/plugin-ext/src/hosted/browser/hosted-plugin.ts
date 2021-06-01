@@ -267,10 +267,11 @@ export class HostedPluginSupport {
         // but shell is not yet revealed
         await this.appState.reachedState('initialized_layout');
 
-        if (toDisconnect.disposed) {
-            // if disconnected then don't try to load plugin contributions
-            return;
-        }
+        // Do not return if connection is disposed
+        // if (toDisconnect.disposed) {
+        //     // if disconnected then don't try to load plugin contributions
+        //     return;
+        // }
         const contributionsByHost = this.loadContributions(toDisconnect);
 
         await this.viewRegistry.initWidgets();
@@ -278,10 +279,11 @@ export class HostedPluginSupport {
         this.viewRegistry.removeStaleWidgets();
         await this.theiaReadyPromise;
 
-        if (toDisconnect.disposed) {
-            // if disconnected then don't try to init plugin code and dynamic contributions
-            return;
-        }
+        // Do not return if connection is disposed
+        // if (toDisconnect.disposed) {
+        //     // if disconnected then don't try to init plugin code and dynamic contributions
+        //     return;
+        // }
         await this.startPlugins(contributionsByHost, toDisconnect);
 
         this.deferredDidStart.resolve();
