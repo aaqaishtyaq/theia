@@ -253,10 +253,15 @@ export class HostedPluginSupport {
     protected async doLoad(): Promise<void> {
         const toDisconnect = new DisposableCollection(Disposable.create(() => { /* mark as connected */ }));
         toDisconnect.push(Disposable.create(() => this.preserveWebviews()));
-        this.server.onDidCloseConnection(() => toDisconnect.dispose());
+        this.server.onDidCloseConnection(() => {
+            console.log('[HR] doLoad 0.1 :: this.server.onDidCloseConnection');
+            toDisconnect.dispose();
+        });
+        console.log('[HR] doLoad: 1.');
 
         // process empty plugins as well in order to properly remove stale plugin widgets
         await this.syncPlugins();
+        console.log('[HR] doLoad: 2.');
 
         // it has to be resolved before awaiting layout is initialized
         // otherwise clients can hang forever in the initialization phase
@@ -266,12 +271,14 @@ export class HostedPluginSupport {
         // and core layout is initialized, i.e. explorer, scm, debug views are already added to the shell
         // but shell is not yet revealed
         await this.appState.reachedState('initialized_layout');
+        console.log('[HR] doLoad: 3.');
 
         if (toDisconnect.disposed) {
             // if disconnected then don't try to load plugin contributions
             return;
         }
         const contributionsByHost = this.loadContributions(toDisconnect);
+        console.log('[HR] doLoad: 4.');
 
         await this.viewRegistry.initWidgets();
         // remove restored plugin widgets which were not registered by contributions
@@ -282,10 +289,13 @@ export class HostedPluginSupport {
             // if disconnected then don't try to init plugin code and dynamic contributions
             return;
         }
+        console.log('[HR] doLoad: 5.');
+
         await this.startPlugins(contributionsByHost, toDisconnect);
 
         this.deferredDidStart.resolve();
 
+        console.log('[HR] doLoad: 6. After startPlugins');
         this.restoreWebviews();
     }
 
@@ -382,6 +392,7 @@ export class HostedPluginSupport {
             this.getStoragePath(),
             this.getHostGlobalStoragePath()
         ]);
+        console.log('[HR] startPlugins: 1');
         if (toDisconnect.disposed) {
             return;
         }
@@ -397,14 +408,21 @@ export class HostedPluginSupport {
                 return;
             }
             const plugins = hostContributions.map(contributions => contributions.plugin.metadata);
+            console.log('[HR] startPlugins: 2. Have plugins');
             thenable.push((async () => {
                 try {
                     const activationEvents = [...this.activationEvents];
+                    console.log(`[HR] startPlugins: 2.1. activationEvents :: ${activationEvents}`);
+                    console.log(`[HR] startPlugins: 2.2. manager :: ${manager}`);
+                    console.log(`[HR] startPlugins: 2.3. plugins :: ${plugins}`);
                     await manager.$start({ plugins, configStorage, activationEvents });
+                    console.log('[HR] startPlugins: 3. Try-Catch');
                     if (toDisconnect.disposed) {
                         return;
                     }
+                    console.log('[HR] startPlugins: 4. Try-Catch after dispose');
                     for (const contributions of hostContributions) {
+                        console.log('[HR] startPlugins: 4. For each contributions');
                         started++;
                         const plugin = contributions.plugin;
                         const id = plugin.metadata.model.id;

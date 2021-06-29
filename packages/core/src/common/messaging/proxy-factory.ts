@@ -118,9 +118,10 @@ export class JsonRpcProxyFactory<T extends object> implements ProxyHandler<T> {
             this.connectionPromiseResolve = resolve
         );
         this.connectionPromise.then(connection => {
-            connection.onClose(() =>
-                this.onDidCloseConnectionEmitter.fire(undefined)
-            );
+            connection.onClose(() => {
+                console.log('[HR] proxy-factory:: waitForConnection:: Closing the connection', JSON.stringify(connection));
+                this.onDidCloseConnectionEmitter.fire(undefined);
+            });
             this.onDidOpenConnectionEmitter.fire(undefined);
         });
     }
